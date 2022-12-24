@@ -1,20 +1,17 @@
-import gymnasium as gym
-import random
-import torch
-import numpy as np
 from collections import deque
+import numpy as np
 import matplotlib.pyplot as plt
-from dqn_agent import DQNAgent
-
-env = gym.make("LunarLander-v2")
-# env.seed(0)
-print("State shape: ", env.observation_space.shape)
-print("Number of actions: ", env.action_space.n)
-
-agent = DQNAgent(state_size=8, action_size=4, seed=0)
 
 
-def dqn(n_episodes=2000, max_t=1000, eps_start=1.0, eps_end=0.01, eps_decay=0.995):
+def train_agent(
+    agent,
+    env,
+    n_episodes=2000,
+    max_t=1000,
+    eps_start=1.0,
+    eps_end=0.01,
+    eps_decay=0.995,
+):
     """Deep Q-Learning.
 
     Params
@@ -61,17 +58,16 @@ def dqn(n_episodes=2000, max_t=1000, eps_start=1.0, eps_end=0.01, eps_decay=0.99
                     i_episode - 100, np.mean(scores_window)
                 )
             )
-            torch.save(agent.qnetwork_local.state_dict(), "checkpoint.pth")
+            # torch.save(agent.qnetwork_local.state_dict(), "checkpoint.pth")
             break
     return scores
 
 
-scores = dqn()
-
-# plot the scores
-fig = plt.figure()
-ax = fig.add_subplot(111)
-plt.plot(np.arange(len(scores)), scores)
-plt.ylabel("Score")
-plt.xlabel("Episode #")
-plt.show()
+def plot_scores(scores):
+    # plot the scores
+    fig = plt.figure()
+    ax = fig.add_subplot(111)
+    plt.plot(np.arange(len(scores)), scores)
+    plt.ylabel("Score")
+    plt.xlabel("Episode #")
+    plt.show()
