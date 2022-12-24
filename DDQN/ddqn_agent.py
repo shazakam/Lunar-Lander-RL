@@ -22,9 +22,6 @@ class DDQNAgent:
         tau=1e-3,
         lr=5e-4,
         update_every=4,
-        eps_start=1.0,
-        eps_end=0.01,
-        eps_decay=0.995,
         device=torch.device("cuda:0" if torch.cuda.is_available() else "cpu"),
     ):
         self.device = device
@@ -35,9 +32,6 @@ class DDQNAgent:
         self.tau = tau
         self.lr = lr
         self.update_every = update_every
-        self.eps_start = eps_start
-        self.eps_end = eps_end
-        self.eps_decay = eps_decay
         self.steps_done = 0
         self.online_network = QNetwork(
             state_size, action_size, seed, fc1_units, fc2_units
@@ -103,9 +97,10 @@ class DDQNAgent:
 
         # Get expected Q values from local model
         Q_expected = self.online_network(states).gather(1, actions)
+        Q_expected.unsqueeze(1)
 
         # Compute loss - we unsqueeze to target size matches [64, 64]
-        loss = F.mse_loss(Q_expected, Q_targets.unsqueeze(1))
+        loss = F.mse_loss(Q_expected, Q_targets)
         # Minimize the loss
         self.optimizer.zero_grad()
         loss.backward()

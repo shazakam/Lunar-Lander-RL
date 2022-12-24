@@ -63,11 +63,12 @@ def train_agent(
     return scores
 
 
-def plot_scores(scores):
+def plot_scores(scores, title):
     # plot the scores
     fig = plt.figure()
     ax = fig.add_subplot(111)
     plt.plot(np.arange(len(scores)), scores)
+    plt.title(title)
     plt.ylabel("Score")
     plt.xlabel("Episode #")
     plt.show()

@@ -21,12 +21,12 @@ if __name__ == "__main__":
         batch_size=BATCH_SIZE,
         lr=LR,
         update_every=UPDATE_EVERY,
-        eps_start=1.0,
-        eps_end=0.01,
-        eps_decay=0.995,
     )
-    dqn_agent = DQNAgent(state_size=8, action_size=4, seed=0)
+    # dqn_agent = DQNAgent(state_size=8, action_size=4, seed=0)
 
     env = gym.make("LunarLander-v2")
-    scores = train_agent(dqn_agent, env, n_episodes=100)
-    plot_scores(scores)
+    # dqn_scores = train_agent(dqn_agent, env, n_episodes=500)
+    ddqn_scores = train_agent(ddqn_agent, env, n_episodes=500)
+
+    plot_scores(ddqn_scores, title="DDQN Scores")
+    # plot_scores(ddqn_scores, title="DDQN Scores")
