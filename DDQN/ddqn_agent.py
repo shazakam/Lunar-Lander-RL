@@ -26,7 +26,7 @@ class DDQNAgent:
     ):
         self.num_exploitative_actions = 0
         self.num_exploratory_actions = 0
-        self.losses = []
+        self.loss = 0
         self.device = device
         self.state_size = state_size
         self.action_size = action_size
@@ -105,7 +105,7 @@ class DDQNAgent:
 
         # Compute loss
         loss = F.mse_loss(Q_expected, Q_targets)
-        self.losses.append(loss.item())  # Add the loss value to the list
+        self.loss += loss
         # Minimize the loss
         self.optimizer.zero_grad()
         loss.backward()

@@ -3,18 +3,6 @@ import numpy as np
 import matplotlib.pyplot as plt
 
 
-def success_criteria_met(state):
-    # Unpack the state variables
-    x = state[0]
-    y = state[1]
-
-    # Set the criteria for a successful landing
-    on_pad = abs(x) < 1.0 and abs(y) < 1.0
-
-    # Return True if the criteria are met, False otherwise
-    return on_pad
-
-
 def train_agent(
     agent,
     env,
@@ -34,9 +22,11 @@ def train_agent(
         eps_end (float): minimum value of epsilon
         eps_decay (float): multiplicative factor (per episode) for decreasing epsilon
     """
-    scores = []  # list containing scores from each episode
-    successes = 0
-    episode_length = 0
+    scores = []
+    episode_lengths = []
+    losses = []
+    exploitative_actions = []
+    exploratory_actions = []
 
     scores_window = deque(maxlen=100)  # last 100 scores
     eps = eps_start  # initialize epsilon
@@ -45,6 +35,7 @@ def train_agent(
     for i_episode in range(1, n_episodes + 1):
         state, _ = env.reset()
         score = 0
+        episode_length = 0
         for _ in range(max_t):
 
             # Increment the episode length counter
@@ -57,12 +48,23 @@ def train_agent(
             state = next_state
             score += reward
             if done:
-                # lands successfully on landing pad
-                if success_criteria_met(state):
-                    successes += 1
                 break
+
+        # save total loss during the episode and reset it
+        losses.append(agent.loss.detach().numpy())
+        agent.loss = 0
+
+        exploitative_actions.append(agent.num_exploitative_actions)
+        agent.num_exploitative_actions = 0
+
+        exploratory_actions.append(agent.num_exploratory_actions)
+        agent.num_exploratory_actions = 0
+
+        episode_lengths.append(episode_length)
+
         scores_window.append(score)  # save most recent score
         scores.append(score)  # save most recent score
+
         eps = max(eps_end, eps_decay * eps)  # decrease epsilon
         eps_change.append(eps)
         print(
@@ -87,11 +89,10 @@ def train_agent(
             break
     return (
         scores,
-        successes,
-        episode_length,
-        agent.losses,
-        agent.num_exploitative_actions,
-        agent.num_exploratory_actions,
+        episode_lengths,
+        losses,
+        exploitative_actions,
+        exploratory_actions,
         eps_change,
     )
 

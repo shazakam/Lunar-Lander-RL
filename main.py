@@ -28,19 +28,16 @@ if __name__ == "__main__":
     # dqn_scores = train_agent(dqn_agent, env, n_episodes=500)
     (
         ddqn_scores,
-        ddqn_successes,
         ddqn_episode_length,
         ddqn_losses,
-        ddqn_num_exploitative_actions,
-        ddqn_num_exploratory_actions,
+        ddqn_exploitative_actions,
+        ddqn_exploratory_actions,
         ddqn_eps_change,
-    ) = train_agent(ddqn_agent, env, n_episodes=400)
+    ) = train_agent(ddqn_agent, env, n_episodes=200)
 
     plot_metric(ddqn_scores, "DDQN Scores")
+    plot_metric(ddqn_exploitative_actions, "DDQN Exploitative")
+    plot_metric(ddqn_exploratory_actions, "DDQN Exploratory")
     plot_metric(ddqn_episode_length, "DDQN Episode Length")
     plot_metric(ddqn_losses, "DDQN Losses")
     plot_metric(ddqn_eps_change, "DDQN Eps Change")
-
-    print("successes", ddqn_successes)
-    print("ddqn_num_exploitative_actions", ddqn_num_exploitative_actions)
-    print("ddqn_num_exploratory_actions", ddqn_num_exploratory_actions)
