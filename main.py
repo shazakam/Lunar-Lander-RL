@@ -28,5 +28,4 @@ if __name__ == "__main__":
     # dqn_scores = train_agent(dqn_agent, env, n_episodes=500)
     ddqn_scores = train_agent(ddqn_agent, env, n_episodes=500)
 
-    plot_scores(ddqn_scores, title="DDQN Scores")
-    # plot_scores(ddqn_scores, title="DDQN Scores")
+    # plot_scores(ddqn_scores, dqn_scores)

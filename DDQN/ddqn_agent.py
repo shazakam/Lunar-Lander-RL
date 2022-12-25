@@ -27,7 +27,7 @@ class DDQNAgent:
         self.device = device
         self.state_size = state_size
         self.action_size = action_size
-        self.seed = random.seed(seed)
+        self.seed = seed
         self.gamma = gamma
         self.tau = tau
         self.lr = lr
@@ -90,16 +90,15 @@ class DDQNAgent:
         best_actions = torch.argmax(q_online, dim=1)
         q_target = self.target_network(next_states).detach()
         Q_targets_next = q_target[range(self.batch_size), best_actions]
+        Q_targets_next = Q_targets_next.unsqueeze(1)
 
         # Compute Q targets for current states
         Q_targets = rewards + (gamma * Q_targets_next * (1 - dones))
-        Q_targets.unsqueeze(1)
 
         # Get expected Q values from local model
         Q_expected = self.online_network(states).gather(1, actions)
-        Q_expected.unsqueeze(1)
 
-        # Compute loss - we unsqueeze to target size matches [64, 64]
+        # Compute loss
         loss = F.mse_loss(Q_expected, Q_targets)
         # Minimize the loss
         self.optimizer.zero_grad()

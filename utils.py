@@ -63,12 +63,19 @@ def train_agent(
     return scores
 
 
-def plot_scores(scores, title):
-    # plot the scores
-    fig = plt.figure()
-    ax = fig.add_subplot(111)
-    plt.plot(np.arange(len(scores)), scores)
-    plt.title(title)
-    plt.ylabel("Score")
-    plt.xlabel("Episode #")
+def plot_scores(scores1, scores2):
+    fig, (ax1, ax2) = plt.subplots(1, 2, figsize=(10, 5))
+
+    # Plot scores1 in subplot 1
+    ax1.plot(scores1)
+    ax1.set_title("DDQN")
+    ax1.set_xlabel("Episode")
+    ax1.set_ylabel("Score")
+
+    # Plot scores2 in subplot 2
+    ax2.plot(scores2)
+    ax2.set_title("DQN")
+    ax2.set_xlabel("Episode")
+    ax2.set_ylabel("Score")
+
     plt.show()
