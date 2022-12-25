@@ -1,7 +1,7 @@
 import gymnasium as gym
 from DDQN.ddqn_agent import DDQNAgent
 from DQN.dqn_agent import DQNAgent
-from utils import train_agent, plot_scores
+from utils import plot_metric, train_agent, plot_scores
 
 
 if __name__ == "__main__":
@@ -26,6 +26,21 @@ if __name__ == "__main__":
 
     env = gym.make("LunarLander-v2")
     # dqn_scores = train_agent(dqn_agent, env, n_episodes=500)
-    ddqn_scores = train_agent(ddqn_agent, env, n_episodes=500)
+    (
+        ddqn_scores,
+        ddqn_successes,
+        ddqn_episode_length,
+        ddqn_losses,
+        ddqn_num_exploitative_actions,
+        ddqn_num_exploratory_actions,
+        ddqn_eps_change,
+    ) = train_agent(ddqn_agent, env, n_episodes=400)
 
-    # plot_scores(ddqn_scores, dqn_scores)
+    plot_metric(ddqn_scores, "DDQN Scores")
+    plot_metric(ddqn_episode_length, "DDQN Episode Length")
+    plot_metric(ddqn_losses, "DDQN Losses")
+    plot_metric(ddqn_eps_change, "DDQN Eps Change")
+
+    print("successes", ddqn_successes)
+    print("ddqn_num_exploitative_actions", ddqn_num_exploitative_actions)
+    print("ddqn_num_exploratory_actions", ddqn_num_exploratory_actions)

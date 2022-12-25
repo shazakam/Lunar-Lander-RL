@@ -3,6 +3,18 @@ import numpy as np
 import matplotlib.pyplot as plt
 
 
+def success_criteria_met(state):
+    # Unpack the state variables
+    x = state[0]
+    y = state[1]
+
+    # Set the criteria for a successful landing
+    on_pad = abs(x) < 1.0 and abs(y) < 1.0
+
+    # Return True if the criteria are met, False otherwise
+    return on_pad
+
+
 def train_agent(
     agent,
     env,
@@ -23,12 +35,21 @@ def train_agent(
         eps_decay (float): multiplicative factor (per episode) for decreasing epsilon
     """
     scores = []  # list containing scores from each episode
+    successes = 0
+    episode_length = 0
+
     scores_window = deque(maxlen=100)  # last 100 scores
     eps = eps_start  # initialize epsilon
+    eps_change = [eps]
+
     for i_episode in range(1, n_episodes + 1):
         state, _ = env.reset()
         score = 0
-        for t in range(max_t):
+        for _ in range(max_t):
+
+            # Increment the episode length counter
+            episode_length += 1
+
             action = agent.act(state, eps)
             next_state, reward, terminated, truncated, _ = env.step(action)
             done = terminated | truncated
@@ -36,10 +57,14 @@ def train_agent(
             state = next_state
             score += reward
             if done:
+                # lands successfully on landing pad
+                if success_criteria_met(state):
+                    successes += 1
                 break
         scores_window.append(score)  # save most recent score
         scores.append(score)  # save most recent score
         eps = max(eps_end, eps_decay * eps)  # decrease epsilon
+        eps_change.append(eps)
         print(
             "\rEpisode {}\tAverage Score: {:.2f}".format(
                 i_episode, np.mean(scores_window)
@@ -60,7 +85,15 @@ def train_agent(
             )
             # torch.save(agent.qnetwork_local.state_dict(), "checkpoint.pth")
             break
-    return scores
+    return (
+        scores,
+        successes,
+        episode_length,
+        agent.losses,
+        agent.num_exploitative_actions,
+        agent.num_exploratory_actions,
+        eps_change,
+    )
 
 
 def plot_scores(scores1, scores2):
@@ -78,4 +111,19 @@ def plot_scores(scores1, scores2):
     ax2.set_xlabel("Episode")
     ax2.set_ylabel("Score")
 
+    plt.show()
+
+
+def plot_metric(values, title):
+    """Plots a list of values with a given title.
+
+    Params
+    ======
+        values (list): list of values to plot
+        title (str): title of the plot
+    """
+    plt.plot(values)
+    plt.xlabel("Episodes")
+    plt.ylabel(title)
+    plt.title(title + " over time")
     plt.show()
