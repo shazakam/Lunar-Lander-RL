@@ -4,6 +4,7 @@ import numpy as np
 import matplotlib.pyplot as plt
 import optuna
 from optuna.samplers import TPESampler
+import torch
 
 
 from DDQN.ddqn_agent import DDQNAgent
@@ -13,10 +14,12 @@ from DQN.dqn_agent import DQNAgent
 def train_agent(
     agent,
     env,
+    agent_type,
     n_episodes=1000,
     max_t=1000,
     eps_start=1.0,
     eps_end=0.01,
+    save_agent=False,
 ):
     """Deep Q-Learning.
 
@@ -57,7 +60,7 @@ def train_agent(
                 break
 
         # save total loss during the episode and reset it
-        # losses.append(agent.loss.detach().numpy())
+        losses.append(agent.loss)
         agent.loss = 0
 
         exploitative_actions.append(agent.num_exploitative_actions)
@@ -91,7 +94,15 @@ def train_agent(
                     i_episode - 100, np.mean(scores_window)
                 )
             )
-            # torch.save(agent.qnetwork_local.state_dict(), "checkpoint.pth")
+            if save_agent:
+                torch.save(
+                    agent.target_network.state_dict(),
+                    f"checkpoints/{agent_type}_target_network_{i_episode}.pth",
+                )
+                torch.save(
+                    agent.online_network.state_dict(),
+                    f"checkpoints/{agent_type}_online_network_{i_episode}.pth",
+                )
             break
 
     return {
@@ -117,6 +128,7 @@ def get_optimal_hyperparamters(env, agent_type, n_trials=10, n_episodes=1000, se
         lr = trial.suggest_float("lr", 1e-4, 1e-2)
         update_every = trial.suggest_int("update_every", 1, 6)
         eps_decay = trial.suggest_float("eps_decay", 0.9, 0.999)
+        loss_fn = trial.suggest_categorical("loss_fn", ["mse", "huber"])
 
         # Create and train DDQN agent
         agent = (
@@ -133,6 +145,7 @@ def get_optimal_hyperparamters(env, agent_type, n_trials=10, n_episodes=1000, se
                 tau=tau,
                 lr=lr,
                 update_every=update_every,
+                loss_fn=loss_fn,
             )
             if agent_type == "ddqn"
             else DQNAgent(
@@ -150,7 +163,7 @@ def get_optimal_hyperparamters(env, agent_type, n_trials=10, n_episodes=1000, se
                 update_every=update_every,
             )
         )
-        metrics = train_agent(agent, env, n_episodes=n_episodes)
+        metrics = train_agent(agent, env, n_episodes=n_episodes, agent_type=agent_type)
         # Return average reward over all episodes
         return np.average(metrics["scores"])
 
@@ -206,11 +219,16 @@ def _save_bar_plot(data, x_axis_name, y_axis_name, fig_name):
 
 def save_metric_plots(metrics, agent_type):
     title = lambda x: x.replace("_", " ").title()
+    # used to compute the average score for each 100 eps for a cleaner graph
+    avg_scores_100 = []
     for key, metric in metrics.items():
+        if key == "scores":
+            for i in range(0, len(metric), 100):
+                avg_scores_100.append(np.mean(metric[i : i + 100]))
         # clear plot so others don't get saved in same img
         plt.clf()
         key_title = title(key)
-        plt.plot(metric)
+        plt.plot(avg_scores_100 if key == "scores" else metric)
         plt.xlabel("Episodes")
         plt.ylabel(key_title)
         plt.title(key_title + " over time")

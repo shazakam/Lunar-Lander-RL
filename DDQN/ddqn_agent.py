@@ -14,6 +14,7 @@ class DDQNAgent:
         state_size,
         action_size,
         seed,
+        loss_fn,
         buffer_size=10000,
         batch_size=64,
         fc1_units=64,
@@ -27,9 +28,10 @@ class DDQNAgent:
         device=torch.device("cuda:0" if torch.cuda.is_available() else "cpu"),
     ):
         self.num_exploitative_actions = 0
+        self.loss_fn = loss_fn
         self.eps_decay = eps_decay
         self.num_exploratory_actions = 0
-        self.loss = 0
+        self.loss = 0.0
         self.device = device
         self.state_size = state_size
         self.action_size = action_size
@@ -106,9 +108,13 @@ class DDQNAgent:
         # Get expected Q values from local model
         Q_expected = self.online_network(states).gather(1, actions)
 
-        # Compute loss
-        loss = F.mse_loss(Q_expected, Q_targets)
-        self.loss += loss
+        # Compute loss - only two options and if it is not mse it is huber loss
+        loss = (
+            F.mse_loss(Q_expected, Q_targets)
+            if self.loss_fn == "mse"
+            else F.huber_loss(Q_expected, Q_targets)
+        )
+        self.loss += loss.item()
         # Minimize the loss
         self.optimizer.zero_grad()
         loss.backward()

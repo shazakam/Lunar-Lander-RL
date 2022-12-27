@@ -11,8 +11,8 @@ from utils import (
 def run_optimal_agent(
     agent_type,
     seed=42,
-    n_episodes=500,
-    n_trials=20,
+    n_episodes=1000,
+    n_trials=10,
     env=gym.make("LunarLander-v2", render_mode="rgb_array_list"),
 ):
     env = env
@@ -31,6 +31,7 @@ def run_optimal_agent(
             lr=opt_params["lr"],
             update_every=opt_params["update_every"],
             eps_decay=opt_params["eps_decay"],
+            loss_fn=opt_params["loss_fn"],
         )
         if agent_type == "ddqn"
         else DQNAgent(
@@ -42,6 +43,7 @@ def run_optimal_agent(
             lr=opt_params["lr"],
             update_every=opt_params["update_every"],
             eps_decay=opt_params["eps_decay"],
+            loss_fn=opt_params["loss_fn"],
         )
     )
 
@@ -53,13 +55,15 @@ def run_optimal_agent(
         episode_trigger=lambda x: x % 100 == 0,
     )
 
-    optim_agent_metrics = train_agent(agent, record_env, n_episodes=n_episodes)
+    optim_agent_metrics = train_agent(
+        agent, record_env, n_episodes=n_episodes, save_agent=True, agent_type=agent_type
+    )
     save_metric_plots(optim_agent_metrics, agent_type=agent_type)
 
 
 if __name__ == "__main__":
-    # final inputs for real results should be: n_episodes=500, n_trials=20
-    run_optimal_agent(agent_type="ddqn", n_episodes=100, n_trials=2)
+    # final inputs for real results should be: n_episodes=500, n_trials=10
+    run_optimal_agent(agent_type="ddqn", n_episodes=1000, n_trials=10)
 
     # keep this commented out until DQN is adapated to work with this function
     # run_optimal_agent(agent_type="dqn", n_episodes=100, n_trials=2)
