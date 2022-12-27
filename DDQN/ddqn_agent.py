@@ -22,9 +22,12 @@ class DDQNAgent:
         tau=1e-3,
         lr=5e-4,
         update_every=4,
+        # this is used in the training loop but we want to see how a change in this can affect traning so need to be here for optune optimizer
+        eps_decay=0.995,
         device=torch.device("cuda:0" if torch.cuda.is_available() else "cpu"),
     ):
         self.num_exploitative_actions = 0
+        self.eps_decay = eps_decay
         self.num_exploratory_actions = 0
         self.loss = 0
         self.device = device
@@ -37,13 +40,13 @@ class DDQNAgent:
         self.update_every = update_every
         self.steps_done = 0
         self.online_network = QNetwork(
-            state_size, action_size, seed, fc1_units, fc2_units
+            state_size, action_size, self.seed, fc1_units, fc2_units
         ).to(self.device)
         self.target_network = QNetwork(
-            state_size, action_size, seed, fc1_units, fc2_units
+            state_size, action_size, self.seed, fc1_units, fc2_units
         ).to(self.device)
         self.optimizer = optim.Adam(self.online_network.parameters(), lr=self.lr)
-        self.memory = ReplayBuffer(action_size, buffer_size, batch_size, seed)
+        self.memory = ReplayBuffer(action_size, buffer_size, batch_size, self.seed)
         self.batch_size = batch_size
         self.update_counter = 0
 

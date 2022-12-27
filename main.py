@@ -1,43 +1,65 @@
 import gymnasium as gym
 from DDQN.ddqn_agent import DDQNAgent
 from DQN.dqn_agent import DQNAgent
-from utils import plot_metric, train_agent, plot_scores
+from utils import (
+    get_optimal_hyperparamters,
+    save_metric_plots,
+    train_agent,
+)
+
+
+def run_optimal_agent(
+    agent_type,
+    seed=42,
+    n_episodes=500,
+    n_trials=20,
+    env=gym.make("LunarLander-v2", render_mode="rgb_array_list"),
+):
+    env = env
+
+    opt_params = get_optimal_hyperparamters(
+        env, n_trials=n_trials, n_episodes=n_episodes, agent_type=agent_type
+    )
+
+    agent = (
+        DDQNAgent(
+            state_size=8,
+            action_size=4,
+            seed=seed,
+            buffer_size=opt_params["buffer_size"],
+            batch_size=opt_params["batch_size"],
+            lr=opt_params["lr"],
+            update_every=opt_params["update_every"],
+            eps_decay=opt_params["eps_decay"],
+        )
+        if agent_type == "ddqn"
+        else DQNAgent(
+            state_size=8,
+            action_size=4,
+            seed=seed,
+            buffer_size=opt_params["buffer_size"],
+            batch_size=opt_params["batch_size"],
+            lr=opt_params["lr"],
+            update_every=opt_params["update_every"],
+            eps_decay=opt_params["eps_decay"],
+        )
+    )
+
+    # create new env with same seed and set render mode here as this makes training slower
+    # when finding optimal hyperparameters
+    record_env = gym.wrappers.RecordVideo(
+        env,
+        f"videos/{agent_type}",
+        episode_trigger=lambda x: x % 100 == 0,
+    )
+
+    optim_agent_metrics = train_agent(agent, record_env, n_episodes=n_episodes)
+    save_metric_plots(optim_agent_metrics, agent_type=agent_type)
 
 
 if __name__ == "__main__":
-    # Set the hyperparameters
-    BUFFER_SIZE = int(1e5)  # replay buffer size
-    BATCH_SIZE = 64  # minibatch size
-    GAMMA = 0.99  # discount factor
-    TAU = 1e-3  # for soft update of target parameters
-    LR = 5e-4  # learning rate
-    UPDATE_EVERY = 4  # how often to update the network
+    # final inputs for real results should be: n_episodes=500, n_trials=20
+    run_optimal_agent(agent_type="ddqn", n_episodes=100, n_trials=2)
 
-    ddqn_agent = DDQNAgent(
-        state_size=8,
-        action_size=4,
-        seed=42,
-        buffer_size=BUFFER_SIZE,
-        batch_size=BATCH_SIZE,
-        lr=LR,
-        update_every=UPDATE_EVERY,
-    )
-    # dqn_agent = DQNAgent(state_size=8, action_size=4, seed=0)
-
-    env = gym.make("LunarLander-v2")
-    # dqn_scores = train_agent(dqn_agent, env, n_episodes=500)
-    (
-        ddqn_scores,
-        ddqn_episode_length,
-        ddqn_losses,
-        ddqn_exploitative_actions,
-        ddqn_exploratory_actions,
-        ddqn_eps_change,
-    ) = train_agent(ddqn_agent, env, n_episodes=200)
-
-    plot_metric(ddqn_scores, "DDQN Scores")
-    plot_metric(ddqn_exploitative_actions, "DDQN Exploitative")
-    plot_metric(ddqn_exploratory_actions, "DDQN Exploratory")
-    plot_metric(ddqn_episode_length, "DDQN Episode Length")
-    plot_metric(ddqn_losses, "DDQN Losses")
-    plot_metric(ddqn_eps_change, "DDQN Eps Change")
+    # keep this commented out until DQN is adapated to work with this function
+    # run_optimal_agent(agent_type="dqn", n_episodes=100, n_trials=2)
