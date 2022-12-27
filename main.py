@@ -62,7 +62,6 @@ def run_optimal_agent(
 
 
 if __name__ == "__main__":
-    # final inputs for real results should be: n_episodes=500, n_trials=10
     run_optimal_agent(agent_type="ddqn", n_episodes=1000, n_trials=10)
 
     # keep this commented out until DQN is adapated to work with this function
