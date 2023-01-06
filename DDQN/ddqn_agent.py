@@ -4,8 +4,8 @@ import torch.nn.functional as F
 import numpy as np
 
 
-from DDQN.ddqn_qnetwork import QNetwork
-from DDQN.replay_buffer import ReplayBuffer
+from ddqn_qnetwork import QNetwork
+from replay_buffer import ReplayBuffer
 
 
 class DDQNAgent:
@@ -25,7 +25,6 @@ class DDQNAgent:
         tau=1e-3,
         lr=5e-4,
         update_every=4,
-        # this is used in the training loop but we want to see how a change in this can affect traning so need to be here for optune optimizer
         eps_decay=0.995,
         device=torch.device("cuda:0" if torch.cuda.is_available() else "cpu"),
     ):
@@ -94,10 +93,10 @@ class DDQNAgent:
 
         # Epsilon-greedy action selection
         if random.random() > eps:
-            self.num_exploratory_actions += 1
+            self.num_exploitative_actions += 1
             return np.argmax(action_values.cpu().data.numpy())
         else:
-            self.num_exploitative_actions += 1
+            self.num_exploratory_actions += 1
             return random.choice(np.arange(self.action_size))
 
     def learn(self, experiences, gamma):
