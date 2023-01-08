@@ -1,25 +1,16 @@
 import gymnasium as gym
-import torch
 import numpy as np
 from collections import deque
-import matplotlib.pyplot as plt
 from dqn_agent import Agent
 import pandas as pd
-
-
-
 
 def tune_DQN(lr=5e-4,epsilon_dec=0.995,gamma=0.99,batch_size=64,n_episodes=1000):
 
     env = gym.make('LunarLander-v2',render_mode="rgb_array")
     record_env = gym.wrappers.RecordVideo(env,f"Videos/",episode_trigger=lambda x: x%100 == 0,)
     env = record_env
-     
-    
-    print('State shape: ', env.observation_space.shape)
-    print('Number of actions: ', env.action_space.n)
 
-    agent = Agent(state_size=8, action_size=4, seed=0,lr=lr,BATCH_SIZE=batch_size,GAMMA=gamma)
+    agent = Agent(s_size=8, a_size=4, seed=0,lr=lr,BATCH_SIZE=batch_size,GAMMA=gamma)
     
     scores = []                        # list containing scores from each episode
     average_score = []
@@ -40,20 +31,14 @@ def tune_DQN(lr=5e-4,epsilon_dec=0.995,gamma=0.99,batch_size=64,n_episodes=1000)
             score += reward
             if done:
                 break 
-        scores_window.append(score) # save most recent score
+        scores_window.append(score) 
         
-        scores.append(score)              # save most recent score
+        scores.append(score)              
         average_score.append(np.mean(scores_window))
         eps_history.append(eps)
-        eps = max(0.01, epsilon_dec*eps) # decrease epsilon
+        eps = max(0.01, epsilon_dec*eps) 
         
         print('\rEpisode {}\tAverage Score: {:.2f}'.format(i_episode, np.mean(scores_window)), end="")
-        
-        if i_episode % 100 == 0:
-            print('\rEpisode {}\tAverage Score: {:.2f}'.format(i_episode, np.mean(scores_window)))
-            
-        if i_episode == n_episodes:
-            torch.save(agent.qnetwork_local.state_dict(), 'checkpoint.pth')
     
     
     df = pd.DataFrame(list(zip(average_score,eps_history,len(average_score)*[epsilon_dec],
