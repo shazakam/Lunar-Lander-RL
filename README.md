@@ -1,5 +1,13 @@
 # Lunar Lander V2
 
+Our implementation of DQN was based on multiple implementations of DQN in different environments most notably the following articles/tutorials,
+
+https://github.com/FranciscoHu17/BipedalWalker/blob/main/DQN/dqn_walker.py
+
+https://towardsdatascience.com/deep-q-networks-theory-and-implementation-37543f60dd67
+
+https://www.youtube.com/watch?v=wc-FxNENg9U
+
 ### DQN First Implementation
 To reproduce results from the First DQN Implementation run the DQN_tuner file using the tune_DQN function to run a training session with the desired hyperparameters. Results for this implementation will be exported to an Excel file in the Hyperparameter_Results folder in the DQN folder. Comment/Uncomment any lines for further results. The agent will run for 1000 training episodes by default.
 
