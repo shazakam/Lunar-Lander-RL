@@ -59,8 +59,13 @@ class Agent():
             return np.argmax(action_values.cpu().data.numpy())
         else:
             #low probability random action
-            return random.choice(np.arange(self.action_size))
+            return random.choice(np.arange(self.action_size))                  
 
+    def soft_update(self, local_model, target_model, tau):
+        
+        for t_par, l_par in zip(target_model.parameters(), local_model.parameters()):
+            t_par.data.copy_(tau*l_par.data + (1.0-tau)*t_par.data)
+    
     def learn(self, experiences, gamma):
         
         s, a, r, s_t, dones = experiences
@@ -79,13 +84,7 @@ class Agent():
         loss.backward()
         self.optimizer.step()
 
-        self.soft_update(self.qnetwork_local, self.qnetwork_target, TAU)                     
-
-    def soft_update(self, local_model, target_model, tau):
-        
-        for t_par, l_par in zip(target_model.parameters(), local_model.parameters()):
-            t_par.data.copy_(tau*l_par.data + (1.0-tau)*t_par.data)
-
+        self.soft_update(self.qnetwork_local, self.qnetwork_target, TAU)   
 
 class ReplayBuffer:
     #Memory Replay Buffer class to enable experience replay feature
